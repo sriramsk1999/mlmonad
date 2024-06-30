@@ -12,4 +12,4 @@ python main.py --dataset <path/to/dataset>
 
 ## Acknowledgements
 
-Thanks to [Kevin Zakka](https://github.com/kevinzakka/learn-volumetric-fusion) and [Justus Theis](https://github.com/JustusThies/PyMarchingCubes/) making their implementations available, made writing this blogpost/code much easier. 
+This code borrows liberally from the work of[Kevin Zakka](https://github.com/kevinzakka/learn-volumetric-fusion) and [Justus Theis](https://github.com/JustusThies/PyMarchingCubes/). Thank you to them for making their implementations available!

@@ -2,7 +2,7 @@ import numpy as np
 from transforms3d.quaternions import quat2mat
 
 
-def load_pose(filename) -> np.ndarray:
+def load_pose(filename: str) -> np.ndarray:
     """
     Load the pose estimated by COLMAP from its images.txt and return as an ndarray.
 
@@ -10,7 +10,7 @@ def load_pose(filename) -> np.ndarray:
     - filename (str): Path to the file containing pose data.
 
     Returns:
-    - np.ndarray: Array of camera-to-world transformation matrices (N, 4, 4)
+    - np.ndarray: Array of world-to-camera transformation matrices (N, 4, 4)
 
     Assumes the input file format is structured in COLMAP's images.txt format:
     - Lines after the 4th line contain pose data.
@@ -30,12 +30,10 @@ def load_pose(filename) -> np.ndarray:
     poses = np.array([np.eye(4) for _ in range(camData.shape[0])])
     poses[:, :3, :3] = rot_mat
     poses[:, :3, 3] = translations
-    # COLMAP provides world-to-camera pose, invert to get camera-to-world
-    poses = np.linalg.inv(poses)
     return poses
 
 
-def load_intrinsics(filename) -> np.ndarray:
+def load_intrinsics(filename: str) -> np.ndarray:
     """
     Load the intrinsics estimated by COLMAP from its cameras.txt and return as an ndarray.
     Assumes only one camera was used with the SIMPLE_RADIAL camera model.
@@ -58,3 +56,19 @@ def load_intrinsics(filename) -> np.ndarray:
     K[0, 0] = K[1, 1] = f
     K[0, 2], K[1, 2] = cx, cy
     return K
+
+
+def transform_point_cloud(pcd: np.ndarray, pose: np.ndarray) -> np.ndarray:
+    """
+    Transform a point cloud (N, 3) with a given pose (rotation/translation) (4, 4).
+
+    Args:
+    - pcd (np.ndarray): The point cloud, a numpy array of shape (N, 3).
+    - pose (np.ndarray): The transformation matrix, a numpy array of shape (4, 4).
+
+    Returns:
+    - np.ndarray: The transformed point cloud, a numpy array of shape (N, 3).
+    """
+    transformed_pcd = (pose[:3, :3] @ pcd.T).T  # Apply rotation
+    transformed_pcd += pose[:3, 3]  # Apply translation
+    return transformed_pcd
