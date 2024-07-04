@@ -21,7 +21,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--max_depth",
-    default=10,
+    default=40,
     help="maximum depth to be considered. \
     NOTE: COLMAP depth is not metric, a value of 5 does not correspond to 5 metres.",
 )

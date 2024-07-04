@@ -11,12 +11,17 @@ class TSDFVolume:
         self.voxel_idxs = np.indices(self.grid_shape).reshape(3, -1).T
         # We compute the TSDF at the center of each voxel.
         # Additionally we scale down the size of the voxels as our depth values are small.
-        self.voxel_coords = (self.voxel_idxs.astype(np.float32) + 0.5) * 0.02
+        self.voxel_scale = 0.02
+        self.voxel_coords = (
+            self.voxel_idxs.astype(np.float32) + 0.5
+        ) * self.voxel_scale
         self.intrinsics = intrinsics
         self.max_depth = max_depth
         self.truncation_threshold = truncation_threshold
 
     def integrate(self, depth: np.ndarray, pose: np.ndarray) -> np.ndarray:
+        pose = utils.move_pose_to_cube_center(pose, self.grid_shape, self.voxel_scale)
+
         transformed_pcd, pix_coord = self.project_voxels_to_pixels(pose)
         mask, valid_depth = self.get_valid_mask(pix_coord, depth)
         self.update_tsdf(transformed_pcd, mask, valid_depth)

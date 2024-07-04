@@ -72,3 +72,17 @@ def transform_point_cloud(pcd: np.ndarray, pose: np.ndarray) -> np.ndarray:
     transformed_pcd = (pose[:3, :3] @ pcd.T).T  # Apply rotation
     transformed_pcd += pose[:3, 3]  # Apply translation
     return transformed_pcd
+
+
+def move_pose_to_cube_center(pose: np.ndarray, grid_shape, voxel_scale):
+    """
+    Shift the voxel coordinate frame origin from the bottom left corner of the
+    cube to the cube centroid.
+
+    Pose is world-to-camera, so we need to invert to camera-to-world, translate
+    and invert back.
+    """
+    pose = np.linalg.inv(pose)
+    pose[:3, 3] += np.array(grid_shape) * voxel_scale * 0.5
+    pose = np.linalg.inv(pose)
+    return pose
