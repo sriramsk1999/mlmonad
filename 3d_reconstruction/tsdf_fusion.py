@@ -55,17 +55,19 @@ class TSDFVolume:
         return mask, valid_depth
 
     def update_tsdf(self, voxel_pcd, valid_pix_mask, depth):
+        # Get valid z coordinates of the transformed voxel point cloud
         voxel_pcd = voxel_pcd[valid_pix_mask]
         voxel_z = voxel_pcd[:, 2]
         sdf = depth - voxel_z
 
-        # Only keep -threshold < SDF < threshold
+        # Only keep SDF >= -threshold
         valid_sdf_mask = depth > 0
-        valid_sdf_mask &= sdf > -self.truncation_threshold
-        valid_sdf_mask &= sdf < self.truncation_threshold
+        valid_sdf_mask &= sdf >= -self.truncation_threshold
 
         # Calculate the TSDF
         tsdf = sdf[valid_sdf_mask] / self.truncation_threshold
+        tsdf = np.minimum(1.0, tsdf)
+
         # Assume a constant weight of 1 for new observations
         weight = 1
         # A bit convoluted, but we're just using 2 masks to get the relevant voxels
@@ -75,6 +77,8 @@ class TSDFVolume:
         tsdf_new = tsdf
         w_old = self.weight_volume[vx, vy, vz]
         w_new = w_old + weight
+
+        # The TSDF Update equation
         tsdf_vol_new = (w_old * tsdf_old + weight * tsdf_new) / w_new
 
         self.tsdf_volume[vx, vy, vz] = tsdf_vol_new
